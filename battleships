@@ -64,6 +64,8 @@ nums = {
 df = pd.DataFrame(data)
 ships_df = pd.DataFrame(ships)
 nums_df = pd.DataFrame(nums)
+print(nums_df)
+
 #Get shape of dataframe
 shape = df.shape
 
@@ -90,7 +92,7 @@ solving_step=0
 
 os.system('clear')
 while is_done == 0:
-  if count >= 5:
+  if count >= 500:
     print('The puzzle has not been solved after 500+ steps')
     count += 1
     print('Final state after', count, 'steps')
@@ -105,15 +107,15 @@ while is_done == 0:
       for j in range(0,shape[1]):
         if type(possibilities_df.iloc[i,j]) is int and possibilities_df.iloc[i,j] >= 1:
             #For each element if a cell is touching a known boat diagonally, mark it as Empty=0
-            if i+1 <= shape[0] and j+1 <= shape[1] and type(possibilities_df.iloc[i+1,j+1]) is str:
+            if i+1 < shape[0] and j+1 < shape[1] and type(possibilities_df.iloc[i+1,j+1]) is str:
                 possibilities_df.iloc[i+1,j+1] = 0
                 None_count -= 1
                 print('Cell',i,',',j,'has been solved as Empty as it diagonally touches a known boat')
-            if i+1 <= shape[0] and j-1 >= 0 and type(possibilities_df.iloc[i+1,j-1]) is str:
+            if i+1 < shape[0] and j-1 >= 0 and type(possibilities_df.iloc[i+1,j-1]) is str:
                 possibilities_df.iloc[i+1,j-1] = 0
                 None_count -= 1
                 print('Cell',i,',',j,'has been solved as Empty as it diagonally touches a known boat')
-            if i-1 >= 0 and j+1 <= shape[1] and type(possibilities_df.iloc[i-1,j+1]) is str:
+            if i-1 >= 0 and j+1 < shape[1] and type(possibilities_df.iloc[i-1,j+1]) is str:
                 possibilities_df.iloc[i-1,j+1] = 0
                 None_count -= 1
                 print('Cell',i,',',j,'has been solved as Empty as it diagonally touches a known boat')
@@ -128,12 +130,12 @@ while is_done == 0:
                 None_count -= 1
                 print('Cell',i-1,',',j,'has been solved as Empty as it touches a known boat edge')
             #Right
-            if possibilities_df.iloc[i,j] in [1,2,4,5] and j+1 <= shape[1] and type(possibilities_df.iloc[i,j+1]) is str:
+            if possibilities_df.iloc[i,j] in [1,2,4,5] and j+1 < shape[1] and type(possibilities_df.iloc[i,j+1]) is str:
                 possibilities_df.iloc[i,j+1] = 0
                 None_count -= 1
                 print('Cell',i,',',j+1,'has been solved as Empty as it touches a known boat edge')
             #Down
-            if possibilities_df.iloc[i,j] in [1,2,3,5] and i+1 <= shape[0] and type(possibilities_df.iloc[i+1,j]) is str:
+            if possibilities_df.iloc[i,j] in [1,2,3,5] and i+1 < shape[0] and type(possibilities_df.iloc[i+1,j]) is str:
                 possibilities_df.iloc[i+1,j] = 0
                 None_count -= 1
                 print('Cell',i+1,',',j,'has been solved as Empty as it touches a known boat edge')
@@ -147,10 +149,10 @@ while is_done == 0:
             if possibilities_df.iloc[i,j] == 2 and i-1 >= 0 and type(possibilities_df.iloc[i-1,j]) is str:
                 possibilities_df.iloc[i-1,j] = int(7)
                 print('Cell',i-1,',',j,'has been marked as "Boat-Unknown" as it touches a known boat join')
-            if possibilities_df.iloc[i,j] == 3 and j+1 <= shape[1] and type(possibilities_df.iloc[i,j+1]) is str:
+            if possibilities_df.iloc[i,j] == 3 and j+1 < shape[1] and type(possibilities_df.iloc[i,j+1]) is str:
                 possibilities_df.iloc[i,j+1] = int(7)
                 print('Cell',i,',',j+1,'has been marked as "Boat-Unknown" as it touches a known boat join')
-            if possibilities_df.iloc[i,j] == 4 and i+1 <= shape[0] and type(possibilities_df.iloc[i+1,j]) is str:
+            if possibilities_df.iloc[i,j] == 4 and i+1 < shape[0] and type(possibilities_df.iloc[i+1,j]) is str:
                 possibilities_df.iloc[i+1,j] = int(7)
                 print('Cell',i+1,',',j,'has been marked as "Boat-Unknown" as it touches a known boat join')
             if possibilities_df.iloc[i,j] == 5 and j-1 >= 0 and type(possibilities_df.iloc[i,j-1]) is str:
@@ -162,10 +164,15 @@ while is_done == 0:
     #For each row, count how many cells are boats and if it matches total, mark unknown squares as Empty
     for i in range(0,shape[0]):
         row_boat_count = 0
+        row_unknown_count = 0
+        row_empty_count = 0
         #Count how many cells are boats
         for j in range(0,shape[1]):
             if type(possibilities_df.iloc[i,j]) is int and possibilities_df.iloc[i,j] >= 1:
                 row_boat_count += 1
+            elif type(possibilities_df.iloc[i,j]) is str and possibilities_df.iloc[i,j] == 0:
+                row_empty_count += 1
+        row_unknown_count = shape[1] - row_boat_count - row_empty_count
         
         #If the count matches the row total, mark the rest as empty
         if row_boat_count == nums_df.iloc[i,0]:
@@ -174,60 +181,66 @@ while is_done == 0:
                     possibilities_df.iloc[i,j] = 0
                     None_count -= 1
                     print('Cell',i,',',j,'has been solved as Empty as the row',i,'already has the maximum number of boats')
+
+        if i ==5:
+            print('row_boat_count is',row_boat_count)
+            print('row unknown count is',row_unknown_count)
+            print('row empty count',row_empty_count)
+            print('row total is',nums_df.iloc[i,0])
+        #if the number of unknown cells + known boats = row total, mark the rest as 7=Boat-Unknown
+        if row_unknown_count + row_boat_count == nums_df.iloc[i,0]:
+            for j in range(0,shape[1]):
+                if type(possibilities_df.iloc[i,j]) is str:
+                    possibilities_df.iloc[i,j] = 7
+                    print('Cell',i,',',j,'has been marked as "Boat-Unknown" as it must be a boat to satisfy the row',i,'total')
+              
+        
             
           
     #Same logic as above but for columns
-    #For each row, count how many cells are boats and if it matches total, mark unknown squares as Empty
-    for j in range(0,shape[1]):
-        col_boat_count = 0
-        #Count how many cells are boats
-        for i in range(0,shape[0]):
-            if type(possibilities_df.iloc[i,j]) is int and possibilities_df.iloc[i,j] >= 1:
-                col_boat_count += 1
-        
-        #If the count matches the row total, mark the rest as empty
-        if row_boat_count == nums_df.iloc[j,1]:
-            for i in range(0,shape[0]):
-                if type(possibilities_df.iloc[i,j]) is str:
-                    possibilities_df.iloc[i,j] = 0
-                    None_count -= 1
-                    print('Cell',i,',',j,'has been solved as Empty as the col',j,'already has the maximum number of boats')
-              
-        count += 1
-
-    #For each element, rule out potential possibiltiies if they are touching a known cell possibility is already in row/col
-    skip=1
-    if skip == 0:
-      for i in range(0,shape[0]):
+    #For each col, count how many cells are boats and if it matches total, mark unknown squares as Empty
+    skip=0
+    if skip==0:
         for j in range(0,shape[1]):
-            if type(possibilities_df.iloc[i,j]) is str:
-              poss_lst = poss_str_to_poss_lst(possibilities_df.iloc[i,j])
-              for x in possibilities_df.iloc[i,:]:
-                if type(x) is int and x in poss_lst:
-                  poss_lst.remove(x)
-              for y in possibilities_df.iloc[:,j]:
-                if type(y) is int and y in poss_lst:
-                  poss_lst.remove(y)
-          
-            #If there is only one element in poss_lst, then this has to be the answer
-              if len(poss_lst) == 1:
-                possibilities_df.iloc[i,j] = int(poss_lst[0])  
-                None_count -= 1
-                solving_step += 1
-                print('Solving Step #',solving_step)
-                print('Set element',i,',',j,'in box',box,'to',str(poss_lst[0]),'as it was the only potential value for that element')
-                print(possibilities_df)
-                if quality_checker(possibilities_df) == 1:
-                    print('ARRGH')
-              else:
-                possibilities_df.iloc[i,j] = str(poss_lst)
-                if poss_lst ==[]:
-                  print('big problem of empty possibilities list')
-        count += 1            
+            col_boat_count = 0
+            col_unknown_count = 0
+            col_empty_count = 0
+            #Count how many cells are boats
+            for i in range(0,shape[0]):
+                if type(possibilities_df.iloc[i,j]) is int and possibilities_df.iloc[i,j] >= 1:
+                    col_boat_count += 1
+                    #print(i)
+                elif type(possibilities_df.iloc[i,j]) is int and possibilities_df.iloc[i,j] == 0:
+                    col_empty_count += 1
+            col_unknown_count = shape[0]- col_boat_count - col_empty_count
+                
+            
+            #If the count matches the col total, mark the rest as empty
+            if col_boat_count == nums_df.iloc[j,1]:
+                for i in range(0,shape[0]):
+                    if type(possibilities_df.iloc[i,j]) is str:
+                        possibilities_df.iloc[i,j] = 0
+                        None_count -= 1
+                        print('Cell',i,',',j,'has been solved as Empty as the col',j,'already has the maximum number of boats')
+        
+            #if the number of unknown cells + known boats = col total, mark the rest as 7=Boat-Unknown
+            if col_unknown_count + col_boat_count == nums_df.iloc[j,1]:
+                for i in range(0,shape[0]):
+                    if type(possibilities_df.iloc[i,j]) is str:
+                        possibilities_df.iloc[i,j] = 7
+                        print('Cell',i,',',j,'has been marked as "Boat-Unknown" as it must be a boat to satisfy the column',j,'total')
+              
+            count += 1
+
+    #For each boat of unknown type = 7 - try and convert it to a known type
+        #e.g. surrounded by empty = single
+        #e.g. if it has adjacents on two sides its a middle
+        #if it has an adjacent on one side and a water on opposite, its an end
+    
+
+    
       #input additional logic to solve puzzle
       #e.g. existing tuples and higher level logic
-
-      count +=1
     
     # Logic to look for tuples
     #logic to look for X-pairs

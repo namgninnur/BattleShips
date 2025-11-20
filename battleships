@@ -7,6 +7,8 @@ os.system('clear')
 import pandas as pd
 import math as math
 import numpy as np
+from datetime import datetime
+time_start = datetime.now()
 
 #Required functions
 #####
@@ -392,3 +394,7 @@ while is_done == 0:
 print(possibilities_df)
 print(remaining_ships_df)
 print(remaining_ships_df.iloc[0,3])
+
+time_end = datetime.now()
+time_taken = time_end-time_start
+print('Time taken is ',time_taken, 'seconds')

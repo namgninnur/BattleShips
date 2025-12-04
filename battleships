@@ -42,6 +42,29 @@ time_start = datetime.now()
 #  "col6": [None,]
 #}
 
+data_4 = {
+  "col1": [None,None,None,None,None,None,None,2,None,None],
+  "col2": [None,None,None,None,None,None,None,None,None,None],
+  "col3": [None,None,None,None,None,None,None,None,None,None],
+  "col4": [None,None,None,None,None,None,None,None,None,None],
+  "col5": [None,None,None,None,None,None,None,None,None,None],
+  "col6": [None,None,None,None,None,None,None,None,None,None],
+  "col7": [None,None,None,None,None,None,None,None,None,None],
+  "col8": [None,None,None,None,None,None,None,None,None,None],
+  "col9": [None,None,None,1,None,None,4,None,None,None],
+  "col10": [None,None,None,None,None,None,None,None,None,None]
+}
+nums_4 = {
+  "rows": [0,3,2,2,0,2,3,3,2,3],
+  "cols": [4,0,3,0,4,3,3,0,3,0]
+}
+ships_4 = {
+    "1cell": [4],
+    "2cell": [3],
+    "3cell": [2],
+    "4cell": [1],
+}
+
 data_3 = {
   "col1": [None,None,None,None,None,None,None,None],
   "col2": [None,None,None,None,None,None,None,None],
@@ -119,16 +142,16 @@ ships = {
 }
 
 #load data into a DataFrame object:
-df = pd.DataFrame(data_3)
-initial_ships_df = pd.DataFrame(ships_3)
-remaining_ships_df = pd.DataFrame(ships_3)
-nums_df = pd.DataFrame(nums_3)
+df = pd.DataFrame(data_4)
+initial_ships_df = pd.DataFrame(ships_4)
+remaining_ships_df = pd.DataFrame(ships_4)
+nums_df = pd.DataFrame(nums_4)
 print(nums_df)
 
 #Get shape of dataframe
 shape = df.shape
 finished_boats_df = pd.DataFrame(index=range(shape[0]),columns=range(shape[1]))
-viable_lines_for_triple = pd.DataFrame(index=range(shape[0]),columns=range(2))
+viable_lines_for_quad = pd.DataFrame(index=range(shape[0]),columns=range(2))
 
 #Create a base possibiilities dataframe - mutliple possibilities need to be stored as a string
 possibilities_df = df.astype(object)
@@ -153,7 +176,7 @@ solving_step=0
 
 os.system('clear')
 while is_done == 0:
-  if count >= 500:
+  if count >= 5000:
     print('The puzzle has not been solved after 500+ steps')
     count += 1
     print('Final state after', count, 'steps')
@@ -317,38 +340,39 @@ while is_done == 0:
                         possibilities_df.iloc[i,j] = 7
                         print('Cell',i,',',j,'has been marked as "Boat-Unknown" as it must be a boat to satisfy the column',j,'total - ref #016')
 
-        #check if the col has any new completed boats and if so, remove them from remaining boat count
-        for i in range(0,shape[0]):
-            if type(possibilities_df.iloc[i,j]) is int and possibilities_df.iloc[i,j] > 0:
-                if math.isnan(finished_boats_df.iloc[i,j]) is True:
-                    if possibilities_df.iloc[i,j] == 1:
-                        finished_boats_df.iloc[i,j] = 1 
-                        remaining_ships_df.iloc[0,0] -= 1
-                        print('Cell',i,',',j,'has been provided as single boat in the starting data and a single boat has been removed from the remaining available ships - ref #040')
-                    elif possibilities_df.iloc[i,j] == 4:
-                        if i+1 < shape [0]:
-                            if possibilities_df.iloc[i+1,j] == 2:
-                                finished_boats_df.iloc[i,j] = 2
-                                finished_boats_df.iloc[i+1,j] = 2
-                                remaining_ships_df.iloc[0,1] -= 1
-                                print('A completed boat of length 2 has been founds in cells',i,',',j,' and ',i+1,',',j,' and thus a double boat has been removed from the remaining available ships - ref #041')
+            #check if the col has any new completed boats and if so, remove them from remaining boat count
+            for i in range(0,shape[0]):
+                if type(possibilities_df.iloc[i,j]) is int and possibilities_df.iloc[i,j] > 0:
+                    if math.isnan(finished_boats_df.iloc[i,j]) is True:
+                        if possibilities_df.iloc[i,j] == 1:
+                            finished_boats_df.iloc[i,j] = 1 
+                            remaining_ships_df.iloc[0,0] -= 1
+                            print('Cell',i,',',j,'has been provided as single boat in the starting data and a single boat has been removed from the remaining available ships - ref #040')
+                        elif possibilities_df.iloc[i,j] == 4:
+                        
+                            if i+1 < shape [0]:
+                                if possibilities_df.iloc[i+1,j] == 2:
+                                    finished_boats_df.iloc[i,j] = 2
+                                    finished_boats_df.iloc[i+1,j] = 2
+                                    remaining_ships_df.iloc[0,1] -= 1
+                                    print('A completed boat of length 2 has been founds in cells',i,',',j,' and ',i+1,',',j,' and thus a double boat has been removed from the remaining available ships - ref #041')
                     
-                        if i+2 < shape [0]:
-                            if possibilities_df.iloc[i+1,j] == 6 and possibilities_df.iloc[i+2,j] == 2: 
-                                finished_boats_df.iloc[i,j] = 3
-                                finished_boats_df.iloc[i+1,j] = 3
-                                finished_boats_df.iloc[i+2,j] = 3
-                                remaining_ships_df.iloc[0,2] -= 1
-                                print('A completed boat of length 3 has been founds in cell',i,',',j,' to ',i+2,',',j,' and thus a triple boat has been removed from the remaining available ships - ref #042')
-                        if i+3 < shape [0]:
-                            if possibilities_df.iloc[i+1,j] == 6 and possibilities_df.iloc[i+2,j] == 6 and possibilities_df.iloc[i+3,j] == 2: 
-                                finished_boats_df.iloc[i,j] = 4
-                                finished_boats_df.iloc[i+1,j] = 4
-                                finished_boats_df.iloc[i+2,j] = 4
-                                finished_boats_df.iloc[i+3,j] = 4
-                                remaining_ships_df.iloc[0,3] -= 1
-                                print('A completed boat of length 4 has been founds in cell',i,',',j,' to ',i+3,',',j,' and thus a quad boat has been removed from the remaining available ships - ref #043')
-            count += 1
+                            if i+2 < shape [0]:
+                                if possibilities_df.iloc[i+1,j] == 6 and possibilities_df.iloc[i+2,j] == 2: 
+                                    finished_boats_df.iloc[i,j] = 3
+                                    finished_boats_df.iloc[i+1,j] = 3
+                                    finished_boats_df.iloc[i+2,j] = 3
+                                    remaining_ships_df.iloc[0,2] -= 1
+                                    print('A completed boat of length 3 has been founds in cell',i,',',j,' to ',i+2,',',j,' and thus a triple boat has been removed from the remaining available ships - ref #042')
+                            if i+3 < shape [0]:
+                                if possibilities_df.iloc[i+1,j] == 6 and possibilities_df.iloc[i+2,j] == 6 and possibilities_df.iloc[i+3,j] == 2: 
+                                    finished_boats_df.iloc[i,j] = 4
+                                    finished_boats_df.iloc[i+1,j] = 4
+                                    finished_boats_df.iloc[i+2,j] = 4
+                                    finished_boats_df.iloc[i+3,j] = 4
+                                    remaining_ships_df.iloc[0,3] -= 1
+                                    print('A completed boat of length 4 has been founds in cell',i,',',j,' to ',i+3,',',j,' and thus a quad boat has been removed from the remaining available ships - ref #043')
+            #count += 1
 
     
     #For each boat of unknown type = 7, convert into a number if possible
@@ -443,12 +467,16 @@ while is_done == 0:
                                     possibilities_df.iloc[i+3,j] = 2
                                     None_count -= 1
                                     print('Cell',i+3,',',j,'has been marked as an up facing end section that has to go in its direction - ref #025')            
+                        elif type(possibilities_df.iloc[i+3,j]) is str:
+                            pass
                         else:
                             if remaining_ships_df.iloc[0,2] >= 1:
                                 if possibilities_df.iloc[i+2,j] == 7:
                                     possibilities_df.iloc[i+2,j] = 2
                                     None_count -= 1
                                     print('Cell',i+2,',',j,'has been marked as an up facing end section that has to go in its direction - ref #026')
+                    elif i+2 < shape[0] and type(possibilities_df.iloc[i+2,j]) is str:
+                            pass
                     else:
                         if remaining_ships_df.iloc[0,1] >= 1:
                             if possibilities_df.iloc[i+1,j] == 7:                                    
@@ -456,7 +484,7 @@ while is_done == 0:
                                 None_count -= 1
                                 print('Cell',i+1,',',j,'has been marked as an up facing end section that has to go in its direction - ref #027')            
 
-                #Max boat length solver horizontal
+                #Max boat length solver horizontal - NEEDS FIXING TO MATCH VERTICAL
                 if j+1 < shape[0] and type(possibilities_df.iloc[i,j+1]) is int and possibilities_df.iloc[i,j+1] > 1:
                     if j+2 < shape[0] and type(possibilities_df.iloc[i,j+2]) is int and possibilities_df.iloc[i,j+2] > 1:
                         if j+3 < shape[0] and type(possibilities_df.iloc[i,j+3]) is int and possibilities_df.iloc[i,j+3] > 1:
@@ -500,11 +528,12 @@ while is_done == 0:
                         if type(possibilities_df.iloc[i-1,j]) is str:
                             possibilities_df.iloc[i-1,j] = 7
                             print('Cell',i-1,',',j,'has been marked as a 7- unknown boat as it adjoins a middle section that has to go in its direction - ref #035')
-
-    #Logic about where can the largest boats go
-    if remaining_ships_df.iloc[0,2] > 0:
+    
+    #Logic about where can the largest boats go - 4boat for now
+    if remaining_ships_df.iloc[0,3] > 0:
         for i in range(0,shape[0]):
             potential = 0
+            potential_right = []
             row_boat_count = 0
             row_unknown_count = 0
             row_empty_count = 0
@@ -513,7 +542,7 @@ while is_done == 0:
                     if type(finished_boats_df.iloc[i,j]) is int:
                         row_finished_boat_count += 1
 
-            if nums_df.iloc[i,0] - row_finished_boat_count >= 3:
+            if nums_df.iloc[i,0] - row_finished_boat_count >= 4:
                 #Count how many cells are boats
                 for j in range(0,shape[1]):
                     if type(possibilities_df.iloc[i,j]) is int and possibilities_df.iloc[i,j] >= 1:
@@ -521,25 +550,29 @@ while is_done == 0:
                     elif type(possibilities_df.iloc[i,j]) is int and possibilities_df.iloc[i,j] == 0:
                         row_empty_count += 1
                 row_unknown_count = shape[1]- row_boat_count - row_empty_count
-                #if there is a contiguous bunch of 3 unknown/boat cells that is not a finished boat
+                #if there is a contiguous bunch of 4 unknown/boat cells that is not a finished boat
                 potential = 0
                 for j in range(0,shape[1]):
                     if type(possibilities_df.iloc[i,j]) is str or possibilities_df.iloc[i,j] > 0:
                         if math.isnan(finished_boats_df.iloc[i,j]) is True:
-                            if j+2<shape[1]:
+                            if j+3<shape[1]:
                                 if type(possibilities_df.iloc[i,j+1]) is str or possibilities_df.iloc[i,j+1] > 0:
                                     if type(possibilities_df.iloc[i,j+2]) is str or possibilities_df.iloc[i,j+2] > 0:
-                                        potential = 1
+                                        if type(possibilities_df.iloc[i,j+3]) is str or possibilities_df.iloc[i,j+3] > 0:
+                                            potential = 1
+                                            potential_right.append([i,j])
+                                            #print(potential_right)
                                         
-                #Mark row i as a viable row for the triple
+                #Mark row i as a viable row for the quad
                 if potential == 1:
-                    viable_lines_for_triple.iloc[i,0] = 1
+                    viable_lines_for_quad.iloc[i,0] = 1
                 else:
-                    viable_lines_for_triple.iloc[i,0] = 0
+                    viable_lines_for_quad.iloc[i,0] = 0
             else:
-                viable_lines_for_triple.iloc[i,0] = 0                            
+                viable_lines_for_quad.iloc[i,0] = 0                            
                                         
-                
+        #Check for remaining spaces for 4 boat vertically - NEEDS TO BE EXTENDED TO LOOK AT 3 and 4 boats together      
+        potential_down = []
         for j in range(0,shape[1]):
             potential = 0
             col_boat_count = 0
@@ -551,7 +584,7 @@ while is_done == 0:
                         col_finished_boat_count += 1
 
             #Count how many cells are boats
-            if nums_df.iloc[j,1] - col_finished_boat_count >= 3:
+            if nums_df.iloc[j,1] - col_finished_boat_count >= 4:
                 for i in range(0,shape[0]):
                     if type(possibilities_df.iloc[i,j]) is int and possibilities_df.iloc[i,j] >= 1:
                         col_boat_count += 1
@@ -563,28 +596,75 @@ while is_done == 0:
                 for i in range(0,shape[0]):
                     if type(possibilities_df.iloc[i,j]) is str or possibilities_df.iloc[i,j] > 0:
                         if math.isnan(finished_boats_df.iloc[i,j]) is True:
-                            if i+2<shape[0]:
+                            if i+3<shape[0]:
                                 if type(possibilities_df.iloc[i+1,j]) is str or possibilities_df.iloc[i+1,j] > 0:
                                     if type(possibilities_df.iloc[i+2,j]) is str or possibilities_df.iloc[i+2,j] > 0:
-                                        potential = 1
+                                        if type(possibilities_df.iloc[i+3,j]) is str or possibilities_df.iloc[i+3,j] > 0:
+                                            potential = 1
+                                            potential_down.append([i,j])
                                         #NEED TO SAVE THE VIABLE EMPTY SPACE COORDINATES HERE
                                         
-                #Mark col j as a viable col for the triple
+                #Mark col j as a viable col for the quad
                 if potential == 1:
-                    viable_lines_for_triple.iloc[j,1] = 1
+                    viable_lines_for_quad.iloc[j,1] = 1
                 else:
-                    viable_lines_for_triple.iloc[j,1] = 0
+                    viable_lines_for_quad.iloc[j,1] = 0
             else:
-                viable_lines_for_triple.iloc[j,1] = 0
+                viable_lines_for_quad.iloc[j,1] = 0
 
         viable_counter = 0
         for i in range(0,shape[0]):
             for j in range(0,2):
-                if viable_lines_for_triple.iloc[i,j]==1:
+                if viable_lines_for_quad.iloc[i,j]==1:
                     viable_counter += 1
-        if viable_counter == remaining_ships_df.iloc[0,2]:
-            pass
-            #Insert the triple into the available 3 empty cell space
+        if viable_counter == remaining_ships_df.iloc[0,3]:
+            #If there is only one viable line to put the quad in and there is one 1 spot
+            if len(potential_down) == 1:
+                potential_down_str = str(potential_down[0])
+                coord = potential_down_str.split(',')
+                coordi = int(str(coord[0]).replace("[","").replace("]","").replace(" ",""))
+                coordj = int(str(coord[1]).replace("[","").replace("]","").replace(" ",""))
+                possibilities_df.iloc[coordi,coordj] = 4
+                print('Cell',coordi,',',coordj,'has been marked as a 4- down facing end boat as it is the top of the only viable spot for the quad boat - ref #044')
+                possibilities_df.iloc[coordi+1,coordj] = 6
+                print('Cell',coordi,',',coordj,'has been marked as a 6- middle boat section as it is in the middle of the only viable spot for the quad boat - ref #045')
+                possibilities_df.iloc[coordi+2,coordj] = 6
+                print('Cell',coordi,',',coordj,'has been marked as a 6- middle boat section as it is in the middle of the only viable spot for the quad boat - ref #045')
+                possibilities_df.iloc[coordi+3,coordj] = 2
+                print('Cell',coordi,',',coordj,'has been marked as a 2- up facing end boat as it is the bottom of the only viable spot for the quad boat - ref #046')
+
+                
+            #If there is only one viable line to put the quad in and there are two spots
+            elif len(potential_down) == 2:
+                potential_down_str1 = str(potential_down[0])
+                coord1 = potential_down_str1.split(',')
+                coord1i = int(str(coord1[0]).replace("[","").replace("]","").replace(" ",""))
+                coord1j = int(str(coord1[1]).replace("[","").replace("]","").replace(" ",""))
+
+                potential_down_str2 = str(potential_down[1])
+                coord2 = potential_down_str2.split(',')
+                coord2i = int(str(coord1[0]).replace("[","").replace("]","").replace(" ",""))
+                coord2j = int(str(coord1[1]).replace("[","").replace("]","").replace(" ",""))
+                
+                for crossover_count in range(1,4):
+                    if type(possibilities_df.iloc[coord1i+crossover_count,coord1j]) is str:
+                        if coord1i+crossover_count >= coord2i and coord1i+crossover_count <= coord2i+3:
+                            possibilities_df.iloc[coord1i+crossover_count,coord1j] = 7
+                            print('Cell',coord1i+crossover_count,',',coord1j,'has been marked as a 7- unknown boat as it must form part of the quad boat, but its exact type is currently unknown - ref #047')
+
+
+                #Do the spots overlap
+                #If yes, mark the overlap as 7s
+            else:
+                pass
+                #If there is only one viable line and there are >2 spots
+            
+            #print(viable_counter)
+            #print(remaining_ships_df.iloc[0,3])
+            
+            
+
+            #Insert the quad into the available 4 empty cell space
             ##### NEED TO IDENTIFY THE EMPTY SPACE ABOVE EARLIER AND SAVE IT
 
     #for i in range(0,shape[0]):
@@ -598,7 +678,7 @@ while is_done == 0:
 
 print(possibilities_df)
 print(remaining_ships_df)
-print(viable_lines_for_triple)
+print(viable_lines_for_quad)
 print(nums_df)
 
 time_end = datetime.now()

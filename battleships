@@ -42,6 +42,29 @@ time_start = datetime.now()
 #  "col6": [None,]
 #}
 
+data_5 = {
+  "col1": [None,None,None,None,None,None,None,None,None,None],
+  "col2": [None,None,None,None,None,None,None,None,None,None],
+  "col3": [None,None,None,None,1,None,None,None,None,None],
+  "col4": [None,None,None,None,None,None,None,None,None,None],
+  "col5": [None,None,None,None,None,2,None,None,None,None],
+  "col6": [None,None,None,None,None,None,None,None,None,None],
+  "col7": [None,None,None,None,None,None,7,None,None,None],
+  "col8": [None,None,None,None,None,None,None,None,None,None],
+  "col9": [None,None,None,None,None,None,None,1,None,None],
+  "col10": [None,None,None,None,None,None,None,None,None,None]
+}
+nums_5 = {
+  "rows": [00,6,0,2,2,2,1,2,4,1],
+  "cols": [3,1,2,2,4,1,5,1,1,0]
+}
+ships_5 = {
+    "1cell": [4],
+    "2cell": [3],
+    "3cell": [2],
+    "4cell": [1],
+}
+
 data_4 = {
   "col1": [None,None,None,None,None,None,None,2,None,None],
   "col2": [None,None,None,None,None,None,None,None,None,None],
@@ -142,10 +165,10 @@ ships = {
 }
 
 #load data into a DataFrame object:
-df = pd.DataFrame(data_4)
-initial_ships_df = pd.DataFrame(ships_4)
-remaining_ships_df = pd.DataFrame(ships_4)
-nums_df = pd.DataFrame(nums_4)
+df = pd.DataFrame(data_5)
+initial_ships_df = pd.DataFrame(ships_5)
+remaining_ships_df = pd.DataFrame(ships_5)
+nums_df = pd.DataFrame(nums_5)
 print(nums_df)
 
 #Get shape of dataframe
@@ -173,6 +196,7 @@ print(possibilities_df)
 is_done = 0
 count=0
 solving_step=0
+success=0
 
 os.system('clear')
 while is_done == 0:
@@ -184,6 +208,7 @@ while is_done == 0:
     is_done = 1
   elif None_count == 0: 
     is_done=1
+    success = 1
     print('The puzzle is done after',count,'steps')
   else:              
     #Iterate for known boats
@@ -530,10 +555,10 @@ while is_done == 0:
                             print('Cell',i-1,',',j,'has been marked as a 7- unknown boat as it adjoins a middle section that has to go in its direction - ref #035')
     
     #Logic about where can the largest boats go - 4boat for now
-    if remaining_ships_df.iloc[0,3] > 0:
+        #horizontal first
+        potential_right = []
         for i in range(0,shape[0]):
             potential = 0
-            potential_right = []
             row_boat_count = 0
             row_unknown_count = 0
             row_empty_count = 0
@@ -542,16 +567,16 @@ while is_done == 0:
                     if type(finished_boats_df.iloc[i,j]) is int:
                         row_finished_boat_count += 1
 
+            #Count how many cells are boats
             if nums_df.iloc[i,0] - row_finished_boat_count >= 4:
-                #Count how many cells are boats
                 for j in range(0,shape[1]):
                     if type(possibilities_df.iloc[i,j]) is int and possibilities_df.iloc[i,j] >= 1:
                         row_boat_count += 1
                     elif type(possibilities_df.iloc[i,j]) is int and possibilities_df.iloc[i,j] == 0:
                         row_empty_count += 1
-                row_unknown_count = shape[1]- row_boat_count - row_empty_count
-                #if there is a contiguous bunch of 4 unknown/boat cells that is not a finished boat
-                potential = 0
+                row_unknown_count = shape[0]- row_boat_count - row_empty_count    
+                
+                #if there is a contiguous bunch of 3 unknown/boat cells that is not a finished boat
                 for j in range(0,shape[1]):
                     if type(possibilities_df.iloc[i,j]) is str or possibilities_df.iloc[i,j] > 0:
                         if math.isnan(finished_boats_df.iloc[i,j]) is True:
@@ -561,15 +586,15 @@ while is_done == 0:
                                         if type(possibilities_df.iloc[i,j+3]) is str or possibilities_df.iloc[i,j+3] > 0:
                                             potential = 1
                                             potential_right.append([i,j])
-                                            #print(potential_right)
+            
                                         
-                #Mark row i as a viable row for the quad
+                #Mark col j as a viable col for the quad
                 if potential == 1:
                     viable_lines_for_quad.iloc[i,0] = 1
                 else:
                     viable_lines_for_quad.iloc[i,0] = 0
             else:
-                viable_lines_for_quad.iloc[i,0] = 0                            
+                viable_lines_for_quad.iloc[i,0] = 0                          
                                         
         #Check for remaining spaces for 4 boat vertically - NEEDS TO BE EXTENDED TO LOOK AT 3 and 4 boats together      
         potential_down = []
@@ -686,3 +711,13 @@ time_taken = time_end-time_start
 print('Time taken is ',time_taken, 'seconds')
 print(finished_boats_df)
 print(shape[1])
+
+
+import csv
+
+# Sample Data (list of lists, first list is header)
+data = [['data_5', time_start, success, time_taken, count]]
+
+with open('battleships_data.csv', 'a', newline='') as file:
+    writer = csv.writer(file)
+    writer.writerows(data)

@@ -16,10 +16,16 @@ time_start = datetime.now()
 #Initial input
 #####
 
-#Overal solver logic loop
-# Rule out cells in full rows
-# Rule out cells touching a ship
-# Include cells that are known extensions of a partial ship
+#Overal solver logic loop - WIP
+# 1) Iterate through all cells. For each cell based on the information known about it and the surrounding cells:
+#   a) if the cell is unknown, can we determine if it is empty or a ship?
+#   b) if a known ship of unknown type, can we determine what type of ship it is?
+#   c) if it is a ship, can we determine what that means for any adjacent cells
+#   d) Once a cell and all of its adjacent cells are complete, mark as complete, and skip for future passes 
+# 2) Iterate through all rows and columns. For each line:
+#   a) Can we determine any cells must be empty? e.g. line already has max number of ships
+#   b) Can we determine any cells which must be a boat? e.g. all remaining blank cells must be ships to satisfy line total
+# 3) Implement more complex logic e.g. remaining possible locations for large ships.
 
 #Intial board setup
 #None = unknown cell
@@ -191,107 +197,163 @@ ships = {
 #load data into a DataFrame object:
 df = pd.DataFrame(data_6)
 initial_ships_df = pd.DataFrame(ships_6)
-remaining_ships_df = pd.DataFrame(ships_6)
+remaining_ships_df = initial_ships_df
 nums_df = pd.DataFrame(nums_6)
 print(nums_df)
 
 #Get shape of dataframe
 shape = df.shape
 finished_boats_df = pd.DataFrame(index=range(shape[0]),columns=range(shape[1]))
+skip_df = pd.DataFrame(index=range(shape[0]),columns=range(shape[1]))
 viable_lines_for_quad = pd.DataFrame(index=range(shape[0]),columns=range(2))
+
 
 #Create a base possibiilities dataframe - mutliple possibilities need to be stored as a string
 possibilities_df = df.astype(object)
 
-None_count=0 #Number of unknown cells
-lst = list(range(0,8))
+none_count=0 #Number of unknown cells
+lst = list(range(0,8)) # Possible cell types
 for i in range(0,shape[0]):
   for j in range(0,shape[1]):
     if possibilities_df.iloc[i,j] == None or math.isnan(possibilities_df.iloc[i,j]) == True:
-      None_count += 1
+      none_count += 1
       possibilities_df.iloc[i,j] = str(lst)
     else:
       possibilities_df.iloc[i,j] = int(possibilities_df.iloc[i,j])
 
 possibilities_df_orig = possibilities_df
-print(possibilities_df)
 
 #Overall looper, puzzle loops until is_done=1
 is_done = 0
-count=0
-solving_step=0
-success=0
+count = 0
+solving_loop = 0
+success = 0
 
 os.system('clear')
+
 while is_done == 0:
   if count >= 5000:
-    print('The puzzle has not been solved after 500+ steps')
+    print('The puzzle has not been solved after 5000+ loops')
     count += 1
-    print('Final state after', count, 'steps')
+    print('Final state after', count, 'loops with',none_count,'cells remaining unsolved')
     print(possibilities_df)
     is_done = 1
-  elif None_count == 0: 
+  elif none_count == 0: 
     is_done=1
     success = 1
-    print('The puzzle is done after',count,'steps')
+    print('The puzzle is done after',count,'loops')
   else:              
     #Iterate for known boats
     for i in range(0,shape[0]):
       for j in range(0,shape[1]):
-        if type(possibilities_df.iloc[i,j]) is int and possibilities_df.iloc[i,j] >= 1:
-            #For each element if a cell is touching a known boat diagonally, mark it as Empty=0
+        #Check that it's not marked as skip_df.iloc[i,j] == 1. Skip if marked as skippable
+        if skip_df.iloc[i,j] == None:    
+            if possibilities_df.iloc[i,j] == None:
+                #If cell = None, check if its adjacent to any known boats and can be marked as 0-Empty or 7-Unknown Boat
+                #To be completed
+                pass
+            
+            elif possibilities_df.iloc[i,j] == 0:
+                #If cell = 0-Empty, add to skip list
+                skip_df.iloc[i,j] = 1
+            
+            elif possibilities_df.iloc[i,j] == 1:
+                #If cell = 1-Single, mark all adjacent cells as 0-Empty, mark as a completed boat, add to skip list.
+                #For each element if a cell is touching a known boat diagonally, mark it as Empty=0
+                #To be completed
+                pass
+                
+            elif possibilities_df.iloc[i,j] == 2:
+                #If cell = 2-Up, mark all adjacent cells (except i-1 as 0-Empty), mark i-1 as 7-Unknown Boat, add to skip list
+                #To be completed
+                pass
+            
+            elif possibilities_df.iloc[i,j] == 3:
+                #If cell = 3-Right, mark all adjacent cells (except j+1 as 0-Empty), mark j+1 as 7-Unknown Boat, add to skip list
+                #To be completed
+                pass
+            
+            elif possibilities_df.iloc[i,j] == 4:
+                #If cell = 4-Down, mark all adjacent cells (except i+1 as 0-Empty), mark i+1 as 7-Unknown Boat, add to skip list
+                #To be completed
+                pass
+            
+            elif possibilities_df.iloc[i,j] == 5:
+                #If cell = 5-Left, mark all adjacent cells (except j-1 as 0-Empty), mark j-1 as 7-Unknown Boat, add to skip list
+                #To be completed
+                pass
+            
+            elif possibilities_df.iloc[i,j] == 6:
+                #If cell = 6-Middle, mark diagonals as 0-Empty, if direction is known mark directionals as 7-Unknown Boat and perpendiculars as 0-Empty, add to skip list
+                #To be completed
+                pass
+            
+            elif possibilities_df.iloc[i,j] == 7:
+                #If cell = 7-Unknown Boat, mark diagonals as 0-Empty, rule out potential directions based on surrounding cells, see if it can be converted to a boat of known type.
+                #To be completed
+                pass
+
             if i+1 < shape[0] and j+1 < shape[1] and type(possibilities_df.iloc[i+1,j+1]) is str:
                 possibilities_df.iloc[i+1,j+1] = 0
-                None_count -= 1
+                skip_df.iloc[i+1,j+1] = 1
+                none_count -= 1
                 print('Cell',i+1,',',j+1,'has been solved as Empty as it diagonally touches a known boat - ref #001')
+
             if i+1 < shape[0] and j-1 >= 0 and type(possibilities_df.iloc[i+1,j-1]) is str:
                 possibilities_df.iloc[i+1,j-1] = 0
-                None_count -= 1
+                skip_df.iloc[i+1,j-1] = 1
+                none_count -= 1
                 print('Cell',i+1,',',j-1,'has been solved as Empty as it diagonally touches a known boat - ref #002')
+
             if i-1 >= 0 and j+1 < shape[1] and type(possibilities_df.iloc[i-1,j+1]) is str:
                 possibilities_df.iloc[i-1,j+1] = 0
-                None_count -= 1
+                skip_df.iloc[i-1,j+1] = 1
+                none_count -= 1
                 print('Cell',i-1,',',j+1,'has been solved as Empty as it diagonally touches a known boat - ref #003')
+
             if i-1 >= 0 and j-1 >= 0 and type(possibilities_df.iloc[i-1,j-1]) is str:
                 possibilities_df.iloc[i-1,j-1] = 0
-                None_count -= 1
+                skip_df.iloc[i-1,j-1] = 1
+                none_count -= 1
                 print('Cell',i-1,',',j-1,'has been solved as Empty as it diagonally touches a known boat - ref #004')
-            # If its a known boat, mark the other adjacent cells as empty (except for flat side)
-            #Up
-            if possibilities_df.iloc[i,j] in [1,3,4,5] and i-1 >= 0 and type(possibilities_df.iloc[i-1,j]) is str:
-                possibilities_df.iloc[i-1,j] = 0
-                None_count -= 1
-                print('Cell',i-1,',',j,'has been solved as Empty as it touches a known boat edge - ref #005')
-            #Right
-            if possibilities_df.iloc[i,j] in [1,2,4,5] and j+1 < shape[1] and type(possibilities_df.iloc[i,j+1]) is str:
-                possibilities_df.iloc[i,j+1] = 0
-                None_count -= 1
-                print('Cell',i,',',j+1,'has been solved as Empty as it touches a known boat edge - ref #006')
-            #Down
-            if possibilities_df.iloc[i,j] in [1,2,3,5] and i+1 < shape[0] and type(possibilities_df.iloc[i+1,j]) is str:
-                possibilities_df.iloc[i+1,j] = 0
-                None_count -= 1
-                print('Cell',i+1,',',j,'has been solved as Empty as it touches a known boat edge - ref #007')
-            #Left
-            if possibilities_df.iloc[i,j] in [1,2,3,4] and j-1 >= 0 and type(possibilities_df.iloc[i,j-1]) is str:
-                possibilities_df.iloc[i,j-1] = 0
-                None_count -= 1
-                print('Cell',i,',',j-1,'has been solved as Empty as it touches a known boat edge - ref #008')
-            
-            #If a boat is a known end (Up,Right,Down,Left) mark the cell on the flat-side as 7- Boat type unknown
-            if possibilities_df.iloc[i,j] == 2 and i-1 >= 0 and type(possibilities_df.iloc[i-1,j]) is str:
-                possibilities_df.iloc[i-1,j] = int(7)
-                print('Cell',i-1,',',j,'has been marked as "Boat-Unknown" as it touches a known boat join - ref #009')
-            if possibilities_df.iloc[i,j] == 3 and j+1 < shape[1] and type(possibilities_df.iloc[i,j+1]) is str:
-                possibilities_df.iloc[i,j+1] = int(7)
-                print('Cell',i,',',j+1,'has been marked as "Boat-Unknown" as it touches a known boat join - ref #010')
-            if possibilities_df.iloc[i,j] == 4 and i+1 < shape[0] and type(possibilities_df.iloc[i+1,j]) is str:
-                possibilities_df.iloc[i+1,j] = int(7)
-                print('Cell',i+1,',',j,'has been marked as "Boat-Unknown" as it touches a known boat join - ref #011')
-            if possibilities_df.iloc[i,j] == 5 and j-1 >= 0 and type(possibilities_df.iloc[i,j-1]) is str:
-                possibilities_df.iloc[i,j-1] = int(7)
-                print('Cell',i,',',j-1,'has been marked as "Boat-Unknown" as it touches a known boat join - ref #012')
-        count += 1   
+
+            if type(possibilities_df.iloc[i,j]) is int and possibilities_df.iloc[i,j] >= 1:
+                # If its a known boat, mark the other adjacent cells as empty (except for flat side)
+                #Up
+                if possibilities_df.iloc[i,j] in [1,3,4,5] and i-1 >= 0 and type(possibilities_df.iloc[i-1,j]) is str:
+                    possibilities_df.iloc[i-1,j] = 0
+                    none_count -= 1
+                    print('Cell',i-1,',',j,'has been solved as Empty as it touches a known boat edge - ref #005')
+                #Right
+                if possibilities_df.iloc[i,j] in [1,2,4,5] and j+1 < shape[1] and type(possibilities_df.iloc[i,j+1]) is str:
+                    possibilities_df.iloc[i,j+1] = 0
+                    none_count -= 1
+                    print('Cell',i,',',j+1,'has been solved as Empty as it touches a known boat edge - ref #006')
+                #Down
+                if possibilities_df.iloc[i,j] in [1,2,3,5] and i+1 < shape[0] and type(possibilities_df.iloc[i+1,j]) is str:
+                    possibilities_df.iloc[i+1,j] = 0
+                    none_count -= 1
+                    print('Cell',i+1,',',j,'has been solved as Empty as it touches a known boat edge - ref #007')
+                #Left
+                if possibilities_df.iloc[i,j] in [1,2,3,4] and j-1 >= 0 and type(possibilities_df.iloc[i,j-1]) is str:
+                    possibilities_df.iloc[i,j-1] = 0
+                    none_count -= 1
+                    print('Cell',i,',',j-1,'has been solved as Empty as it touches a known boat edge - ref #008')
+                
+                #If a boat is a known end (Up,Right,Down,Left) mark the cell on the flat-side as 7- Boat type unknown
+                if possibilities_df.iloc[i,j] == 2 and i-1 >= 0 and type(possibilities_df.iloc[i-1,j]) is str:
+                    possibilities_df.iloc[i-1,j] = int(7)
+                    print('Cell',i-1,',',j,'has been marked as "Boat-Unknown" as it touches a known boat join - ref #009')
+                if possibilities_df.iloc[i,j] == 3 and j+1 < shape[1] and type(possibilities_df.iloc[i,j+1]) is str:
+                    possibilities_df.iloc[i,j+1] = int(7)
+                    print('Cell',i,',',j+1,'has been marked as "Boat-Unknown" as it touches a known boat join - ref #010')
+                if possibilities_df.iloc[i,j] == 4 and i+1 < shape[0] and type(possibilities_df.iloc[i+1,j]) is str:
+                    possibilities_df.iloc[i+1,j] = int(7)
+                    print('Cell',i+1,',',j,'has been marked as "Boat-Unknown" as it touches a known boat join - ref #011')
+                if possibilities_df.iloc[i,j] == 5 and j-1 >= 0 and type(possibilities_df.iloc[i,j-1]) is str:
+                    possibilities_df.iloc[i,j-1] = int(7)
+                    print('Cell',i,',',j-1,'has been marked as "Boat-Unknown" as it touches a known boat join - ref #012')
+            count += 1   
 
     #Iterate for rows and cols
     #For each row, count how many cells are boats and if it matches total, mark unknown squares as Empty
@@ -312,7 +374,7 @@ while is_done == 0:
             for j in range(0,shape[1]):
                 if type(possibilities_df.iloc[i,j]) is str:
                     possibilities_df.iloc[i,j] = 0
-                    None_count -= 1
+                    none_count -= 1
                     print('Cell',i,',',j,'has been solved as Empty as the row',i,'already has the maximum number of boats - ref #013')
 
         #if the number of unknown cells + known boats = row total, mark the rest as 7=Boat-Unknown
@@ -379,7 +441,7 @@ while is_done == 0:
                 for i in range(0,shape[0]):
                     if type(possibilities_df.iloc[i,j]) is str:
                         possibilities_df.iloc[i,j] = 0
-                        None_count -= 1
+                        none_count -= 1
                         print('Cell',i,',',j,'has been solved as Empty as the col',j,'already has the maximum number of boats - ref #015')
         
             #if the number of unknown cells + known boats = col total, mark the rest as 7=Boat-Unknown
@@ -464,7 +526,7 @@ while is_done == 0:
                 #Single solver
                 if upper_adj+right_adj+lower_adj+left_adj == 0:
                     possibilities_df.iloc[i,j] = 1
-                    None_count -= 1
+                    none_count -= 1
                     remaining_ships_df.iloc[0,0] -= 1
                     finished_boats_df.iloc[i,j] = 1 
                     print('Cell',i,',',j,'has been solved as single boat as it a known boat surrounded by empty cells - ref #017')
@@ -473,34 +535,34 @@ while is_done == 0:
                 elif upper_adj+right_adj+lower_adj == 0 and type(possibilities_df.iloc[i,j-1]) is int:
                     if possibilities_df.iloc[i,j-1] in [3,6,7]:
                         possibilities_df.iloc[i,j] = 5
-                        None_count -= 1
+                        none_count -= 1
                         print('Cell',i,',',j,'has been solved as a left facing end section of boat as it a known boat surrounded by empty cells on 3 sides and a known boat on the left - ref #018')
                 elif right_adj+lower_adj+left_adj == 0 and type(possibilities_df.iloc[i-1,j]) is int:
                     if possibilities_df.iloc[i-1,j] in [4,6,7]:
                         possibilities_df.iloc[i,j] = 2
-                        None_count -= 1
+                        none_count -= 1
                         print('Cell',i,',',j,'has been solved as a up facing end section of boat as it a known boat surrounded by empty cells on 3 sides and a known boat on the top - ref #019')
                 elif lower_adj+left_adj+upper_adj == 0 and type(possibilities_df.iloc[i,j+1]) is int:
                     if possibilities_df.iloc[i,j+1] in [5,6,7]:
                         possibilities_df.iloc[i,j] = 3
-                        None_count -= 1
+                        none_count -= 1
                         print('Cell',i,',',j,'has been solved as a right facing end section of boat as it a known boat surrounded by empty cells on 3 sides and a known boat on the right - ref #020')
                 elif left_adj+upper_adj+right_adj == 0 and type(possibilities_df.iloc[i+1,j]) is int:
                     if possibilities_df.iloc[i+1,j] in [2,6,7]:
                         possibilities_df.iloc[i,j] = 4
-                        None_count -= 1
+                        none_count -= 1
                         print('Cell',i,',',j,'has been solved as a down facing end section of boat as it a known boat surrounded by empty cells on 3 sides and a known boat below - ref #021')             
                 
                 #Boat of three plus in-between solver
                 if i+1 < shape[0] and type(possibilities_df.iloc[i+1,j]) is int and possibilities_df.iloc[i+1,j] > 1:
                     if i-1 >= 0 and type(possibilities_df.iloc[i-1,j]) is int and possibilities_df.iloc[i-1,j] > 1:
                         possibilities_df.iloc[i,j] = 6
-                        None_count -= 1
+                        none_count -= 1
                         print('Cell',i,',',j,'has been solved as a middle boat section as it is a known boat section that has two boat sections above and below it - ref #022')
                 elif j+1 < shape[1] and type(possibilities_df.iloc[i,j+1]) is int and possibilities_df.iloc[i,j+1] > 1:
                     if j-1 >= 0 and type(possibilities_df.iloc[i,j-1]) is int and possibilities_df.iloc[i,j-1] > 1:
                         possibilities_df.iloc[i,j] = 6
-                        None_count -= 1
+                        none_count -= 1
                         print('Cell',i,',',j,'has been solved as a middle boat section as it is a known boat section that has two boat sections to the left and right of it - ref #023')
 
                 #Max boat length solver vertical
@@ -510,11 +572,11 @@ while is_done == 0:
                             if remaining_ships_df.iloc[0,3] >= 1:
                                 if possibilities_df.iloc[i+2,j] == 7:
                                     possibilities_df.iloc[i+2,j] = 6                                
-                                    None_count -= 1
+                                    none_count -= 1
                                     print('Cell',i+2,',',j,'has been marked as a middle section that has to go in its direction - ref #024')
                                 if possibilities_df.iloc[i+3,j] == 7:
                                     possibilities_df.iloc[i+3,j] = 2
-                                    None_count -= 1
+                                    none_count -= 1
                                     print('Cell',i+3,',',j,'has been marked as an up facing end section that has to go in its direction - ref #025')            
                         elif type(possibilities_df.iloc[i+3,j]) is str:
                             pass
@@ -522,7 +584,7 @@ while is_done == 0:
                             if remaining_ships_df.iloc[0,2] >= 1:
                                 if possibilities_df.iloc[i+2,j] == 7:
                                     possibilities_df.iloc[i+2,j] = 2
-                                    None_count -= 1
+                                    none_count -= 1
                                     print('Cell',i+2,',',j,'has been marked as an up facing end section that has to go in its direction - ref #026')
                     elif i+2 < shape[0] and type(possibilities_df.iloc[i+2,j]) is str:
                             pass
@@ -530,7 +592,7 @@ while is_done == 0:
                         if remaining_ships_df.iloc[0,1] >= 1:
                             if possibilities_df.iloc[i+1,j] == 7:                                    
                                 possibilities_df.iloc[i+1,j] = 2
-                                None_count -= 1
+                                none_count -= 1
                                 print('Cell',i+1,',',j,'has been marked as an up facing end section that has to go in its direction - ref #027')            
 
                 #Max boat length solver horizontal
@@ -540,23 +602,23 @@ while is_done == 0:
                             if remaining_ships_df.iloc[0,3] >= 1:
                                 if possibilities_df.iloc[i,j+2] == 7:
                                     possibilities_df.iloc[i,j+2] = 6
-                                    None_count -= 1
+                                    none_count -= 1
                                     print('Cell',i,',',j+2,'has been marked as a middle section that has to go in its direction - ref #028')
                                 if possibilities_df.iloc[i,j+3] == 7:
                                     possibilities_df.iloc[i,j+3] = 5
-                                    None_count -= 1
+                                    none_count -= 1
                                     print('Cell',i,',',j+3,'has been marked as a left facing end section that has to go in its direction - ref #0029')            
                         else:
                             if remaining_ships_df.iloc[0,2] >= 1:
                                 if possibilities_df.iloc[i,j+2] == 7:
                                     possibilities_df.iloc[i,j+2] = 5
-                                    None_count -= 1
+                                    none_count -= 1
                                     print('Cell',i,',',j+2,'has been marked as a left facing end section that has to go in its direction - ref #030')
                     else:
                         if remaining_ships_df.iloc[0,1] >= 1:
                             if possibilities_df.iloc[i,j+1] == 7:
                                 possibilities_df.iloc[i,j+1] = 5
-                                None_count -= 1
+                                none_count -= 1
                                 print('Cell',i,',',j+1,'has been marked as a left facing end section that has to go in its direction - ref #031')            
 
             #Middle section extender      

@@ -207,7 +207,6 @@ finished_boats_df = pd.DataFrame(index=range(shape[0]),columns=range(shape[1]))
 skip_df = pd.DataFrame(index=range(shape[0]),columns=range(shape[1]))
 viable_lines_for_quad = pd.DataFrame(index=range(shape[0]),columns=range(2))
 
-
 #Create a base possibiilities dataframe - mutliple possibilities need to be stored as a string
 possibilities_df = df.astype(object)
 
@@ -260,8 +259,8 @@ while is_done == 0:
                     
                     elif possibilities_df.iloc[i,j] == 1:
                         #If cell = 1-Single, mark all adjacent cells as 0-Empty, mark as a completed boat, add to skip list.
-                        diagonals_of_known_boat(1,i,j,shape,possibilities_df,skip_df,none_count)
-                        adjacents_of_known_boat(1,i,j,shape,possibilities_df,skip_df,none_count)
+                        possibilities_df,skip_df,none_count = diagonals_of_known_boat(1,i,j,shape,possibilities_df,skip_df,none_count)
+                        possibilities_df,skip_df,none_count = adjacents_of_known_boat(1,i,j,shape,possibilities_df,skip_df,none_count)
                         skip_df.iloc[i,j] = 1
                         finished_boats_df.iloc[i,j] = 1 
                         remaining_ships_df.iloc[0,0] -= 1
@@ -269,70 +268,48 @@ while is_done == 0:
                         
                     elif possibilities_df.iloc[i,j] == 2:
                         #If cell = 2-Up, mark all adjacent cells (except i-1 as 0-Empty), mark i-1 as 7-Unknown Boat, add to skip list
-                        diagonals_of_known_boat(2,i,j,shape,possibilities_df,skip_df,none_count)
-                        adjacents_of_known_boat(2,i,j,shape,possibilities_df,skip_df,none_count)
+                        possibilities_df,skip_df,none_count = diagonals_of_known_boat(2,i,j,shape,possibilities_df,skip_df,none_count)
+                        possibilities_df,skip_df,none_count = adjacents_of_known_boat(2,i,j,shape,possibilities_df,skip_df,none_count)
                         skip_df.iloc[i,j] = 1
                     
                     elif possibilities_df.iloc[i,j] == 3:
                         #If cell = 3-Right, mark all adjacent cells (except j+1 as 0-Empty), mark j+1 as 7-Unknown Boat, add to skip list
-                        diagonals_of_known_boat(3,i,j,shape,possibilities_df,skip_df,none_count)
-                        adjacents_of_known_boat(3,i,j,shape,possibilities_df,skip_df,none_count)
+                        possibilities_df,skip_df,none_count = diagonals_of_known_boat(3,i,j,shape,possibilities_df,skip_df,none_count)
+                        possibilities_df,skip_df,none_count = adjacents_of_known_boat(3,i,j,shape,possibilities_df,skip_df,none_count)
                         skip_df.iloc[i,j] = 1
                     
                     elif possibilities_df.iloc[i,j] == 4:
                         #If cell = 4-Down, mark all adjacent cells (except i+1 as 0-Empty), mark i+1 as 7-Unknown Boat, add to skip list
-                        diagonals_of_known_boat(4,i,j,shape,possibilities_df,skip_df,none_count)
-                        adjacents_of_known_boat(4,i,j,shape,possibilities_df,skip_df,none_count)
+                        possibilities_df,skip_df,none_count = diagonals_of_known_boat(4,i,j,shape,possibilities_df,skip_df,none_count)
+                        possibilities_df,skip_df,none_count = adjacents_of_known_boat(4,i,j,shape,possibilities_df,skip_df,none_count)
                         skip_df.iloc[i,j] = 1
                     
                     elif possibilities_df.iloc[i,j] == 5:
                         #If cell = 5-Left, mark all adjacent cells (except j-1 as 0-Empty), mark j-1 as 7-Unknown Boat, add to skip list
-                        diagonals_of_known_boat(5,i,j,shape,possibilities_df,skip_df,none_count)
-                        adjacents_of_known_boat(5,i,j,shape,possibilities_df,skip_df,none_count)
+                        possibilities_df,skip_df,none_count = diagonals_of_known_boat(5,i,j,shape,possibilities_df,skip_df,none_count)
+                        possibilities_df,skip_df,none_count = adjacents_of_known_boat(5,i,j,shape,possibilities_df,skip_df,none_count)
                         skip_df.iloc[i,j] = 1
                     
                     elif possibilities_df.iloc[i,j] == 6:
                         #If cell = 6-Middle, mark diagonals as 0-Empty, if direction is known mark directionals as 7-Unknown Boat and perpendiculars as 0-Empty, add to skip list
-                        diagonals_of_known_boat(6,i,j,shape,possibilities_df,skip_df,none_count)
-                        #To be completed
+                        possibilities_df,skip_df,none_count = diagonals_of_known_boat(6,i,j,shape,possibilities_df,skip_df,none_count)
+                        adjacents = available_directions_for_boat(6,i,j,shape,possibilities_df)
+                        possibilities_df,skip_df,none_count,finished_boats_df,remaining_ships_df = update_boat_type(6,i,j,shape,possibilities_df,skip_df,none_count,adjacents,finished_boats_df,remaining_ships_df)
                     
                     elif possibilities_df.iloc[i,j] == 7:
                         #If cell = 7-Unknown Boat, mark diagonals as 0-Empty, rule out potential directions based on surrounding cells, see if it can be converted to a boat of known type.
-                        diagonals_of_known_boat(7,i,j,shape,possibilities_df,skip_df,none_count)
+                        possibilities_df,skip_df,none_count = diagonals_of_known_boat(7,i,j,shape,possibilities_df,skip_df,none_count)
                         adjacents = available_directions_for_boat(7,i,j,shape,possibilities_df)
-                        update_boat_type(7,i,j,shape,possibilities_df,skip_df,none_count,adjacents,finished_boats_df,remaining_ships_df)
+                        possibilities_df,skip_df,none_count,finished_boats_df,remaining_ships_df = update_boat_type(7,i,j,shape,possibilities_df,skip_df,none_count,adjacents,finished_boats_df,remaining_ships_df)
                         #To be completed
         count += 1
-            
+
         #Iterate for rows and cols
         #For each row, count how many cells are boats and if it matches total, mark unknown squares as Empty
+        possibilities_df,skip_df,none_count = row_iterator(shape,possibilities_df,nums_df,skip_df,none_count)
+        possibilities_df,skip_df,none_count = col_iterator(shape,possibilities_df,nums_df,skip_df,none_count)
+
         for i in range(0,shape[0]):
-            row_boat_count = 0
-            row_unknown_count = 0
-            row_empty_count = 0
-            #Count how many cells are boats
-            for j in range(0,shape[1]):
-                if type(possibilities_df.iloc[i,j]) is int and possibilities_df.iloc[i,j] >= 1:
-                    row_boat_count += 1
-                elif type(possibilities_df.iloc[i,j]) is int and possibilities_df.iloc[i,j] == 0:
-                    row_empty_count += 1
-            row_unknown_count = shape[1] - row_boat_count - row_empty_count
-                
-            #If the count matches the row total, mark the rest as empty
-            if row_boat_count == nums_df.iloc[i,0]:
-                for j in range(0,shape[1]):
-                    if type(possibilities_df.iloc[i,j]) is str:
-                        possibilities_df.iloc[i,j] = 0
-                        none_count -= 1
-                        print('Cell',i,',',j,'has been solved as Empty as the row',i,'already has the maximum number of boats - ref #013')
-
-            #if the number of unknown cells + known boats = row total, mark the rest as 7=Boat-Unknown
-            if row_unknown_count + row_boat_count == nums_df.iloc[i,0]:
-                for j in range(0,shape[1]):
-                    if type(possibilities_df.iloc[i,j]) is str:
-                        possibilities_df.iloc[i,j] = 7
-                        print('Cell',i,',',j,'has been marked as "Boat-Unknown" as it must be a boat to satisfy the row',i,'total - ref #014')
-
             #check if the row has any new completed boats and if so, remove them from remaining boat count
             for j in range(0,shape[1]):
                 if type(possibilities_df.iloc[i,j]) is int and possibilities_df.iloc[i,j] > 0:
@@ -372,34 +349,7 @@ while is_done == 0:
             skip=0
             if skip==0:
                 for j in range(0,shape[1]):
-                    col_boat_count = 0
-                    col_unknown_count = 0
-                    col_empty_count = 0
-                    #Count how many cells are boats
-                    for i in range(0,shape[0]):
-                        if type(possibilities_df.iloc[i,j]) is int and possibilities_df.iloc[i,j] >= 1:
-                            col_boat_count += 1
-                            #print(i)
-                        elif type(possibilities_df.iloc[i,j]) is int and possibilities_df.iloc[i,j] == 0:
-                            col_empty_count += 1
-                    col_unknown_count = shape[1]- col_boat_count - col_empty_count
-                        
                     
-                    #If the count matches the col total, mark the rest as empty
-                    if col_boat_count == nums_df.iloc[j,1]:
-                        for i in range(0,shape[0]):
-                            if type(possibilities_df.iloc[i,j]) is str:
-                                possibilities_df.iloc[i,j] = 0
-                                none_count -= 1
-                                print('Cell',i,',',j,'has been solved as Empty as the col',j,'already has the maximum number of boats - ref #015')
-                
-                    #if the number of unknown cells + known boats = col total, mark the rest as 7=Boat-Unknown
-                    if col_unknown_count + col_boat_count == nums_df.iloc[j,1]:
-                        for i in range(0,shape[0]):
-                            if type(possibilities_df.iloc[i,j]) is str:
-                                possibilities_df.iloc[i,j] = 7
-                                print('Cell',i,',',j,'has been marked as "Boat-Unknown" as it must be a boat to satisfy the column',j,'total - ref #016')
-
                     #check if the col has any new completed boats and if so, remove them from remaining boat count
                     for i in range(0,shape[0]):
                         if type(possibilities_df.iloc[i,j]) is int and possibilities_df.iloc[i,j] > 0:
@@ -496,58 +446,6 @@ while is_done == 0:
                                     none_count -= 1
                                     print('Cell',i,',',j+1,'has been marked as a left facing end section that has to go in its direction - ref #031')            
 
-                #Middle section extender      
-                if type(possibilities_df.iloc[i,j]) is int and possibilities_df.iloc[i,j] == 6:
-                    if i-1 < 0:
-                        if i+1 < shape[0] and type(possibilities_df.iloc[i+1,j]) is int and possibilities_df.iloc[i+1,j] == 0:
-                            if type(possibilities_df.iloc[i,j-1]) is str:
-                                possibilities_df.iloc[i,j-1] = 7
-                                print('Cell',i,',',j-1,'has been marked as a 7- unknown boat as it adjoins a middle section that has to go in its direction - ref #050')
-                            if type(possibilities_df.iloc[i,j+1]) is str:
-                                possibilities_df.iloc[i,j+1] = 7
-                                print('Cell',i,',',j+1,'has been marked as a 7- unknown boat as it adjoins a middle section that has to go in its direction - ref #051')
-                    elif i+1 < shape[0] and type(possibilities_df.iloc[i+1,j]) is int and possibilities_df.iloc[i+1,j] == 0:
-                        if i-1 >= 0 and type(possibilities_df.iloc[i-1,j]) is int and possibilities_df.iloc[i-1,j] == 0:
-                            if type(possibilities_df.iloc[i,j-1]) is str:
-                                possibilities_df.iloc[i,j-1] = 7
-                                print('Cell',i,',',j-1,'has been marked as a 7- unknown boat as it adjoins a middle section that has to go in its direction - ref #032')
-                            if type(possibilities_df.iloc[i,j+1]) is str:
-                                possibilities_df.iloc[i,j+1] = 7
-                                print('Cell',i,',',j+1,'has been marked as a 7- unknown boat as it adjoins a middle section that has to go in its direction - ref #033')
-                    elif i+1 > shape[0]:
-                        if i-1 >= 0 and type(possibilities_df.iloc[i-1,j]) is int and possibilities_df.iloc[i-1,j] == 0:
-                            if type(possibilities_df.iloc[i,j-1]) is str:
-                                possibilities_df.iloc[i,j-1] = 7
-                                print('Cell',i,',',j-1,'has been marked as a 7- unknown boat as it adjoins a middle section that has to go in its direction - ref #048')
-                            if type(possibilities_df.iloc[i,j+1]) is str:
-                                possibilities_df.iloc[i,j+1] = 7
-                                print('Cell',i,',',j+1,'has been marked as a 7- unknown boat as it adjoins a middle section that has to go in its direction - ref #049')
-                    elif j-1 < 0:
-                        if j+1 < shape[1] and type(possibilities_df.iloc[i,j+1]) is int and possibilities_df.iloc[i,j+1] == 0:
-                            if type(possibilities_df.iloc[i+1,j]) is str:
-                                possibilities_df.iloc[i+1,j] = 7
-                                print('Cell',i+1,',',j,'has been marked as a 7- unknown boat as it adjoins a middle section that has to go in its direction - ref #054')
-                            if type(possibilities_df.iloc[i-1,j]) is str:
-                                possibilities_df.iloc[i-1,j] = 7
-                                print('Cell',i-1,',',j,'has been marked as a 7- unknown boat as it adjoins a middle section that has to go in its direction - ref #055')
-                    elif j+1 < shape[1] and type(possibilities_df.iloc[i,j+1]) is int and possibilities_df.iloc[i,j+1] == 0:
-                        if j-1 >= 0 and type(possibilities_df.iloc[i,j-1]) is int and possibilities_df.iloc[i,j-1] == 0:
-                            if type(possibilities_df.iloc[i+1,j]) is str:
-                                possibilities_df.iloc[i+1,j] = 7
-                                print('Cell',i+1,',',j,'has been marked as a 7- unknown boat as it adjoins a middle section that has to go in its direction - ref #034')
-                            if type(possibilities_df.iloc[i-1,j]) is str:
-                                possibilities_df.iloc[i-1,j] = 7
-                                print('Cell',i-1,',',j,'has been marked as a 7- unknown boat as it adjoins a middle section that has to go in its direction - ref #035')
-                    elif j+1 < shape[1]:
-                        if j-1 >= 0 and type(possibilities_df.iloc[i,j-1]) is int and possibilities_df.iloc[i,j-1] == 0:
-                            if type(possibilities_df.iloc[i+1,j]) is str:
-                                possibilities_df.iloc[i+1,j] = 7
-                                print('Cell',i+1,',',j,'has been marked as a 7- unknown boat as it adjoins a middle section that has to go in its direction - ref #052')
-                            if type(possibilities_df.iloc[i-1,j]) is str:
-                                possibilities_df.iloc[i-1,j] = 7
-                                print('Cell',i-1,',',j,'has been marked as a 7- unknown boat as it adjoins a middle section that has to go in its direction - ref #053')
-                    
-        
         #Logic about where can the largest boats go - 4boat for now
             #horizontal first
             potential_right = []
@@ -702,16 +600,17 @@ while is_done == 0:
         #Add a timer to the script
         #Export the time and date to another script which stores a tabular history of runs
 
-    print(possibilities_df)
-    print(remaining_ships_df)
-    print(viable_lines_for_quad)
-    print(nums_df)
+print(possibilities_df)
+print(remaining_ships_df)
+print(viable_lines_for_quad)
+print(nums_df)
 
-    time_end = datetime.now()
-    time_taken = time_end-time_start
-    print('Time taken is ',time_taken, 'seconds')
-    print(finished_boats_df)
-    print(shape[1])
+time_end = datetime.now()
+time_taken = time_end-time_start
+print('Time taken is ',time_taken, 'seconds')
+print(finished_boats_df)
+print(shape[1])
+print(none_count)
 
 
 import csv

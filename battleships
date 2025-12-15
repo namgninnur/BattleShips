@@ -8,7 +8,6 @@ import pandas as pd
 import math as math
 import numpy as np
 from datetime import datetime
-time_start = datetime.now()
 
 #Required functions
 #####
@@ -51,7 +50,8 @@ time_start = datetime.now()
 from logicfunctions import *
 
 puzzle_ref = input('Please enter puzzle reference ID:')
-print(puzzle_ref)
+time_start = datetime.now()
+
 data, nums, ships = get_puzzle_data(puzzle_ref)
 
 #load data into a DataFrame object:
@@ -341,7 +341,7 @@ print(none_count)
 import csv
 
 # Sample Data (list of lists, first list is header)
-data = [['data_6', time_start, success, time_taken, count, none_count]]
+data = [[puzzle_ref, time_start, success, time_taken, count, none_count]]
 
 with open('battleships_data.csv', 'a', newline='') as file:
     writer = csv.writer(file)
